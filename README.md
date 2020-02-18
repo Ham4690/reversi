@@ -1,3 +1,5 @@
+https://ham4690.github.io/reversi/
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
