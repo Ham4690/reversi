@@ -151,11 +151,12 @@ class Game extends React.Component {
 
     handleClick(i,j) {
         const history = this.state.history.slice(0, this.state.stepNumber + 1);
-        console.log(history);
         const current = history[history.length - 1];
-        console.log(current);
-        const squares = JSON.parse(JSON.stringify(current.squares));
+
+        //コールスタックが溢れないようにしている
+        const squares = JSON.parse(JSON.stringify(current.squares), setTimeout( () => {JSON.parse(JSON.stringify(current.squares))}, 0));
         console.log(squares);
+
         // when game finish , cannot put stone
         if (calculateWinner(squares) ) {
             return;
@@ -178,7 +179,8 @@ class Game extends React.Component {
                 stepNumber: history.length,
                 blackIsNext: !this.state.blackIsNext,
             });
-            this.update(history[history.length - 1].squares, !this.state.blackIsNext);
+
+            this.update(squares, !this.state.blackIsNext);
         }
     }
 
@@ -214,23 +216,29 @@ class Game extends React.Component {
                 blackIsNext: true
             });
         }
-        if(!blackIsNext) {
-            console.log("CPU");
-            setTimeout(this.think(squares), 1000);
-        }
-        return null;
+        // if(!blackIsNext) {
+        //     console.log("CPU");
+        //     setTimeout(this.think(squares), 1000);
+        // }
     }
 
 
     think(squares) {
         let highScore = -1000;
         let px = -1, py = -1;
+        let tmpData = []
+        let flipCheckFlag = false;
+
+        console.log(squares);
+        // waitTime(500);
+
         for (let x = 0; x < 8 ; x++) {
             for (let y = 0; y < 8 ; y++) {
-                let tmpData = JSON.parse(JSON.stringify(squares));
                 let flipped = getFlipCells(x, y, WHITE, squares);
-
                 if (flipped.length > 0) {
+                    tmpData = JSON.parse(JSON.stringify(squares), setTimeout( () => {JSON.parse(JSON.stringify(squares))}, 0));
+                    console.log("tmpData");
+                    console.log(tmpData);
                     for (let i = 0; i < flipped.length; i++) {
                         let p = flipped[i][0];
                         let q = flipped[i][1];
@@ -238,7 +246,6 @@ class Game extends React.Component {
                         tmpData[x][y] = '○';
                     }
                     let score = calcWeightData(tmpData);
-                    console.log(score);
                     if ( score > highScore) {
                         highScore = score;
                         px = x;
@@ -248,11 +255,28 @@ class Game extends React.Component {
             }
         }
 
+        console.log("px:" + px + ",py:" + py);
+
         if (px >= 0 && py >= 0) {
             let flipped = getFlipCells(px, py, WHITE, squares);
             if (flipped.length > 0) {
                 console.log("cpu put!!");
                 this.handleClick(px, py);
+                let tmpData = JSON.parse(JSON.stringify(squares));
+                tmpData[px][py] = '○';
+                for (let k = 0; k < flipped.length; k++) {
+                    let x = flipped[k][0]; 
+                    let y = flipped[k][1]; 
+                    tmpData[x][y] = '○';
+                }
+                const history = this.state.history.slice(0, this.state.stepNumber + 1);
+                this.setState({
+                    history: history.concat([{
+                        squares: tmpData,
+                    }]),
+                    stepNumber: history.length,
+                    blackIsNext: BLACK,
+                });
             }
         }
     }
@@ -402,4 +426,9 @@ function calculateWinner(squares) {
     }
 
     return null;
+  }
+
+  function waitTime(waitMsec) {
+      let stMsec = new Date();
+      while (new Date() - stMsec < waitMsec);
   }
