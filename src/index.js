@@ -4,6 +4,16 @@ import './index.css';
 
 const BLACK = true;
 const WHITE = false;
+const WeightData = [
+    [ 30, -12,  0, -1, -1,  0, -12,  30],
+    [-12, -15, -3, -3, -3, -3, -15, -12],
+    [  0,  -3,  0, -1, -1,  0,  -3,   0],
+    [ -1,  -3, -1, -1, -1, -1,  -3,  -1],
+    [ -1,  -3, -1, -1, -1, -1,  -3,  -1],
+    [  0,  -3,  0, -1, -1,  0,  -3,   0],
+    [-12, -15, -3, -3, -3, -3, -15, -12],
+    [ 30, -12,  0, -1, -1,  0, -12,  30]
+];
 
 
 function Square(props) {
@@ -120,46 +130,34 @@ class Game extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            history: [{
-                squares: [
-                        Array(8).fill(null),
-                        Array(8).fill(null),
-                        Array(8).fill(null),
-                        Array(8).fill(null),
-                        Array(8).fill(null),
-                        Array(8).fill(null),
-                        Array(8).fill(null),
-                        Array(8).fill(null)],
-
-            }],
+            history: [
+                {
+                    squares: [
+                            Array(8).fill(null),
+                            Array(8).fill(null),
+                            Array(8).fill(null),
+                            [null,null,null,'○','●',null,null,null],
+                            [null,null,null,'●','○',null,null,null],
+                            Array(8).fill(null),
+                            Array(8).fill(null),
+                            Array(8).fill(null)
+                    ],
+                }
+            ],
             stepNumber: 0,
             blackIsNext: true,
         };
-        this.init();
-    }
-
-    init() {
-        const history = this.state.history.slice(0, this.state.stepNumber + 1);
-        const current = history[history.length - 1];
-        const squares = current.squares.slice();
-        squares[3][3] =  '●';
-        squares[3][4] =  '○';
-        squares[4][3] =  '○';
-        squares[4][4] =  '●';
-        this.setState({
-            history: history.concat([{
-                squares: squares,
-            }]),
-            stepNumber: history.length,
-            blackIsNext: !this.state.blackIsNext,
-        });
     }
 
     handleClick(i,j) {
         const history = this.state.history.slice(0, this.state.stepNumber + 1);
+        console.log(history);
         const current = history[history.length - 1];
-        const squares = current.squares.slice();
-        if (calculateWinner(squares) || squares[i][j]) {
+        console.log(current);
+        const squares = JSON.parse(JSON.stringify(current.squares));
+        console.log(squares);
+        // when game finish , cannot put stone
+        if (calculateWinner(squares) ) {
             return;
         }
 
@@ -180,15 +178,83 @@ class Game extends React.Component {
                 stepNumber: history.length,
                 blackIsNext: !this.state.blackIsNext,
             });
-            /* update check */
+            this.update(history[history.length - 1].squares, !this.state.blackIsNext);
         }
     }
 
     jumpTo(step) {
         this.setState({
             stepNumber: step,
-            blackIsNext: (step % 2) == 0,
+            blackIsNext: (step % 2) === 0,
         });
+    }
+
+    update(squares, blackIsNext) {
+        let numWhite = 0;
+        let numBlack = 0;
+        for( let x = 0; x < 8; x++) {
+            for( let y = 0; y < 8; y++) {
+            if(squares[x][y] === '●')
+                    numBlack++;
+
+            if(squares[x][y] === '○')
+                    numWhite++;
+            }
+        }
+
+        let canBlackFlip = canFlip(BLACK, squares); 
+        let canWhiteFlip = canFlip(WHITE, squares);
+
+        if (!canBlackFlip) {
+            this.setState({
+                blackIsNext: false
+            });
+        }else if(!canWhiteFlip) {
+            this.setState({
+                blackIsNext: true
+            });
+        }
+        if(!blackIsNext) {
+            console.log("CPU");
+            setTimeout(this.think(squares), 1000);
+        }
+        return null;
+    }
+
+
+    think(squares) {
+        let highScore = -1000;
+        let px = -1, py = -1;
+        for (let x = 0; x < 8 ; x++) {
+            for (let y = 0; y < 8 ; y++) {
+                let tmpData = JSON.parse(JSON.stringify(squares));
+                let flipped = getFlipCells(x, y, WHITE, squares);
+
+                if (flipped.length > 0) {
+                    for (let i = 0; i < flipped.length; i++) {
+                        let p = flipped[i][0];
+                        let q = flipped[i][1];
+                        tmpData[p][q] = '○';
+                        tmpData[x][y] = '○';
+                    }
+                    let score = calcWeightData(tmpData);
+                    console.log(score);
+                    if ( score > highScore) {
+                        highScore = score;
+                        px = x;
+                        py = y;
+                    }
+                }
+            }
+        }
+
+        if (px >= 0 && py >= 0) {
+            let flipped = getFlipCells(px, py, WHITE, squares);
+            if (flipped.length > 0) {
+                console.log("cpu put!!");
+                this.handleClick(px, py);
+            }
+        }
     }
 
     render() {
@@ -197,14 +263,14 @@ class Game extends React.Component {
         const winner = calculateWinner(current.squares);
 
         const moves = history.map((step, move) => {
-            const desc = move ?
-                'Go to move #' + move :
-                'Go to game start';
+            const desc = move ? 'Go to move #' + move : 'Go to game start';
+
             return (
                 <li key={move}>
                     <button onClick={() => this.jumpTo(move)}>{desc}</button>
                 </li>
             );
+
         });
 
         let status;
@@ -238,35 +304,20 @@ ReactDOM.render(
     document.getElementById('root')
 );
 
-function update(squares) {
-    let numWhite = 0;
-    let numBlack = 0;
-    for( let x = 0; x < 8; x++) {
-        for( let y = 0; y < 8; y++) {
-           if(squares[x][y] === '●')
-                numBlack++;
 
-           if(squares[x][y] === '○')
-                numWhite++;
+/* weight update */
+function calcWeightData(tmpData) {
+    let score = 0;
+    for (let x = 0; x < 8 ; x++) {
+        for (let y = 0 ; y < 8 ; y++) {
+            if (tmpData[x][y] === '○') {
+                score += WeightData[x][y];
+            }
         }
     }
-
-    let canBlackFlip = canFlip(BLACK, squares); 
-    let canWhiteFlip = canFlip(WHITE, squares);
-/***** 
-    if (numBlack + numWhite == 64 || (!canBlackFlip && !canWhiteFlip)) {
-    }
-******/
-    if (!canBlackFlip) {
-        this.setState({
-            blackIsNext: false
-        });
-    }else if(!canWhiteFlip) {
-        this.setState({
-            blackIsNext: true
-        });
-    }
+    return score;
 }
+
 
 function getFlipCells(i, j, color, squares) {
     if (squares[i][j] != null) {
@@ -318,23 +369,37 @@ function canFlip(color, squares) {
 }
 
 /*cpu が まだ */
-/* 勝利条件がまだ */
-function calculateWinner(squares) {
-    const lines = [
-      [0, 1, 2],
-      [3, 4, 5],
-      [6, 7, 8],
-      [0, 3, 6],
-      [1, 4, 7],
-      [2, 5, 8],
-      [0, 4, 8],
-      [2, 4, 6],
-    ];
-    for (let i = 0; i < lines.length; i++) {
-      const [a, b, c] = lines[i];
-      if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-        return squares[a];
-      }
+
+function isFinish(numBlack, numWhite, squares) {
+    let canBlackFlip = canFlip(BLACK, squares); 
+    let canWhiteFlip = canFlip(WHITE, squares);
+    if (numBlack + numWhite === 64 || (!canBlackFlip && !canWhiteFlip)) {
+        return true;
     }
+    return false;
+}
+
+function calculateWinner(squares) {
+    let numWhite = 0;
+    let numBlack = 0;
+    for( let x = 0; x < 8; x++) {
+        for( let y = 0; y < 8; y++) {
+        if(squares[x][y] === '●')
+                numBlack++;
+
+        if(squares[x][y] === '○')
+                numWhite++;
+        }
+    }
+
+    if(isFinish(numBlack, numWhite, squares)) {
+        if(numBlack > numWhite) {
+            return '●';
+        }
+        if(numWhite > numBlack) {
+            return '○';
+        }
+    }
+
     return null;
   }
