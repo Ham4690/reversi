@@ -152,8 +152,6 @@ class Game extends React.Component {
     handleClick(i, j) {
         const history = this.state.history.slice(0, this.state.stepNumber + 1);
         const current = history[history.length - 1];
-
-        //コールスタックが溢れないようにしている
         const squares = JSON.parse(JSON.stringify(current.squares), setTimeout(() => { JSON.parse(JSON.stringify(current.squares)) }, 0));
         console.log(squares);
 
@@ -217,10 +215,10 @@ class Game extends React.Component {
             });
         }
         // CPU
-        // if(!blackIsNext) {
-        //     console.log("CPU");
-        //     setTimeout(this.think(squares), 1000);
-        // }
+        if(!blackIsNext) {
+            console.log("CPU");
+            setTimeout(this.think(squares), 1000);
+        }
     }
 
     // CPU 
@@ -230,6 +228,7 @@ class Game extends React.Component {
         let tmpData = []
         let flipCheckFlag = false;
 
+        console.log('think');
         console.log(squares);
         // waitTime(500);
 
@@ -238,7 +237,7 @@ class Game extends React.Component {
                 let flipped = getFlipCells(x, y, WHITE, squares);
                 if (flipped.length > 0) {
                     tmpData = JSON.parse(JSON.stringify(squares), setTimeout(() => { JSON.parse(JSON.stringify(squares)) }, 0));
-                    console.log("tmpData");
+                    console.log("tmpData,x:"+x.toString()+",y:"+y.toString());
                     console.log(tmpData);
                     for (let i = 0; i < flipped.length; i++) {
                         let p = flipped[i][0];
@@ -256,13 +255,12 @@ class Game extends React.Component {
             }
         }
 
-        console.log("px:" + px + ",py:" + py);
+        console.log("max-positon px:" + px + ",py:" + py);
 
         if (px >= 0 && py >= 0) {
             let flipped = getFlipCells(px, py, WHITE, squares);
             if (flipped.length > 0) {
                 console.log("cpu put!!");
-                this.handleClick(px, py);
                 let tmpData = JSON.parse(JSON.stringify(squares));
                 tmpData[px][py] = '○';
                 for (let k = 0; k < flipped.length; k++) {
@@ -360,14 +358,17 @@ function getNumStone(blackIsNext, squares){
 }
 
 function getFlipCells(i, j, color, squares) {
+    // すでに石が置いてある場合
     if (squares[i][j] != null) {
         return [];
     }
 
     const dirs = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
     let result = [];
+    let flipped
+
     for (let p = 0; p < dirs.length; p++) {
-        let flipped = getFlipCellsOneDir(i, j, dirs[p][0], dirs[p][1], color, squares);
+        flipped = getFlipCellsOneDir(i, j, dirs[p][0], dirs[p][1], color, squares);
         result = result.concat(flipped);
     }
     return result;
@@ -379,16 +380,22 @@ function getFlipCellsOneDir(i, j, dx, dy, color, squares) {
     let flipped = [];
     let nowColor = color ? '●' : '○';
 
+    // ボード外、隣が同色、または何も置かれていない場合失敗
     if (x < 0 || y < 0 || x > 7 || y > 7 || squares[x][y] === nowColor || squares[x][y] === null) {
         return [];
     }
+
+    // 挟める場合はそれをflippedへ追加
     flipped.push([x, y]);
+
     while (true) {
         x += dx;
         y += dy;
+        // ボード外、または挟む先に何も置かれていない場合は失敗
         if (x < 0 || y < 0 || x > 7 || y > 7 || squares[x][y] === null) {
             return [];
         }
+        // 挟む始まりと終わりの石の色が一緒の時成功
         if (squares[x][y] === nowColor) {
             return flipped;
         } else {
@@ -398,9 +405,10 @@ function getFlipCellsOneDir(i, j, dx, dy, color, squares) {
 }
 
 function canFlip(color, squares) {
+    let flipped
     for (let x = 0; x < 8; x++) {
         for (let y = 0; y < 8; y++) {
-            let flipped = getFlipCells(x, y, color, squares);
+            flipped = getFlipCells(x, y, color, squares);
             if (flipped.length > 0)
                 return true;
         }
