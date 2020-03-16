@@ -58,27 +58,32 @@ class Game extends React.Component {
         squares[x][y] = this.state.blackIsNext ? '●' : '○';
       }
       console.log(this.state.blackIsNext)
-      this.setState({
-        history: history.concat([{
-          squares: squares,
-        }]),
-        stepNumber: history.length,
-        // blackIsNext: !this.state.blackIsNext,
-        blackIsNext: BLACK,
-      });
+      // this.setState({
+      //   history: history.concat([{
+      //     squares: squares,
+      //   }]),
+      //   stepNumber: history.length,
+      //   // blackIsNext: !this.state.blackIsNext,
+      //   blackIsNext: BLACK,
+      // });
 
       this.update(squares, !this.state.blackIsNext);
     }
   }
 
   jumpTo(step) {
-    this.setState({
-      stepNumber: step,
-      blackIsNext: (step % 2) === 0,
-    });
+    console.log("step")
+    console.log(step)
+    if(step >= 0) {
+      this.setState({
+        stepNumber: step,
+        blackIsNext: BLACK,
+      });
+    }
   }
 
   update(squares, blackIsNext) {
+
     let canBlackFlip = this.canFlip(BLACK, squares);
     let canWhiteFlip = this.canFlip(WHITE, squares);
 
@@ -105,17 +110,17 @@ class Game extends React.Component {
     let tmpData = []
     let flipCheckFlag = false;
 
-    console.log('think');
-    console.log(squares);
-    // waitTime(500);
+    // console.log('think');
+    // console.log(squares);
+    // this.waitTime(500);
 
     for (let x = 0; x < 8; x++) {
       for (let y = 0; y < 8; y++) {
         let flipped = this.getFlipCells(x, y, WHITE, squares);
         if (flipped.length > 0) {
           tmpData = JSON.parse(JSON.stringify(squares), setTimeout(() => { JSON.parse(JSON.stringify(squares)) }, 0));
-          console.log("tmpData,x:" + x.toString() + ",y:" + y.toString());
-          console.log(tmpData);
+          // console.log("tmpData,x:" + x.toString() + ",y:" + y.toString());
+          // console.log(tmpData);
           for (let i = 0; i < flipped.length; i++) {
             let p = flipped[i][0];
             let q = flipped[i][1];
@@ -278,29 +283,40 @@ class Game extends React.Component {
     return null;
   }
 
+  myTernPass() {
+    const history = this.state.history.slice(0, this.state.stepNumber + 1);
+    const current = history[history.length - 1];
+    const squares = JSON.parse(JSON.stringify(current.squares));
+    this.update(squares, !this.state.blackIsNext);
+  }
+
   waitTime(waitMsec) {
     let stMsec = new Date();
     while (new Date() - stMsec < waitMsec);
   }
 
   render() {
-    const history = this.state.history;
-    const current = history[this.state.stepNumber];
-    const winner = this.calculateWinner(current.squares);
+    const history = this.state.history
+    const current = history[this.state.stepNumber]
+    const winner = this.calculateWinner(current.squares)
     const moves = history.map((step, move) => {
-      const desc = move ? 'Go to move #' + move : 'Go to game start';
+      const desc = move ? 'Go to move #' + move : 'Go to game start'
 
       return (
         <li key={move}>
           <button onClick={() => this.jumpTo(move)}>{desc}</button>
         </li>
       );
-
     });
+
+    
+    // console.log("nowStep")
+    // console.log(nowStep)
 
     let status;
     let pointBlack = this.getNumStone(BLACK, current.squares);
     let pointWhite = this.getNumStone(WHITE, current.squares);
+
     if (winner) {
       status = 'Winner: ' + winner + '!!! :)';
     } else {
@@ -317,9 +333,18 @@ class Game extends React.Component {
         </div>
         <div className="game-info">
           <div>{status}</div>
+          <button onClick={() => this.myTernPass() }>PASS</button>
           <div>BLACK:{pointBlack}</div>
           <div>WHITE:{pointWhite}</div>
-          <ol>{moves}</ol>
+          <button onClick={() => this.jumpTo(this.state.stepNumber - 1)  }> Back </button>
+          <button onClick={() => {
+            if(this.state.stepNumber < history.length - 1) {
+              this.jumpTo(this.state.stepNumber + 1)}  
+            }
+          }> 
+            Next 
+          </button>
+          {/* <ol>{moves}</ol> */}
         </div>
       </div>
     );
