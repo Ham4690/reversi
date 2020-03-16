@@ -1,6 +1,6 @@
 {
   "files": {
-    "main.css": "/reversi/static/css/main.680697d0.chunk.css",
+    "main.css": "/reversi/static/css/main.fea4e9f3.chunk.css",
     "main.js": "/reversi/static/js/main.1afb7966.chunk.js",
     "main.js.map": "/reversi/static/js/main.1afb7966.chunk.js.map",
     "runtime-main.js": "/reversi/static/js/runtime-main.1edf3f8d.js",
@@ -8,15 +8,15 @@
     "static/js/2.16ac6f3f.chunk.js": "/reversi/static/js/2.16ac6f3f.chunk.js",
     "static/js/2.16ac6f3f.chunk.js.map": "/reversi/static/js/2.16ac6f3f.chunk.js.map",
     "index.html": "/reversi/index.html",
-    "precache-manifest.efca3de8d3b3233ee0681348d789cc18.js": "/reversi/precache-manifest.efca3de8d3b3233ee0681348d789cc18.js",
+    "precache-manifest.e2c60f2ecd879e9a22b1c479afdd2dcc.js": "/reversi/precache-manifest.e2c60f2ecd879e9a22b1c479afdd2dcc.js",
     "service-worker.js": "/reversi/service-worker.js",
-    "static/css/main.680697d0.chunk.css.map": "/reversi/static/css/main.680697d0.chunk.css.map",
+    "static/css/main.fea4e9f3.chunk.css.map": "/reversi/static/css/main.fea4e9f3.chunk.css.map",
     "static/js/2.16ac6f3f.chunk.js.LICENSE.txt": "/reversi/static/js/2.16ac6f3f.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.1edf3f8d.js",
     "static/js/2.16ac6f3f.chunk.js",
-    "static/css/main.680697d0.chunk.css",
+    "static/css/main.fea4e9f3.chunk.css",
     "static/js/main.1afb7966.chunk.js"
   ]
 }
