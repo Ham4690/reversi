@@ -4,14 +4,14 @@ import Board from './Board'
 const BLACK = true;
 const WHITE = false;
 const WeightData = [
-  [30, -12, 0, -1, -1, 0, -12, 30],
-  [-12, -15, -3, -3, -3, -3, -15, -12],
-  [0, -3, 0, -1, -1, 0, -3, 0],
-  [-1, -3, -1, -1, -1, -1, -3, -1],
-  [-1, -3, -1, -1, -1, -1, -3, -1],
-  [0, -3, 0, -1, -1, 0, -3, 0],
-  [-12, -15, -3, -3, -3, -3, -15, -12],
-  [30, -12, 0, -1, -1, 0, -12, 30]
+  [ 30,-12,  0, -1, -1,  0,-12, 30],
+  [-12,-15, -3, -3, -3, -3,-15,-12],
+  [  0, -3,  0, -1, -1,  0, -3,  0],
+  [ -1, -3, -1, -1, -1, -1, -3, -1],
+  [ -1, -3, -1, -1, -1, -1, -3, -1],
+  [  0, -3,  0, -1, -1,  0, -3,  0],
+  [-12,-15, -3, -3, -3, -3,-15,-12],
+  [ 30,-12,  0, -1, -1,  0,-12, 30]
 ]
 
 class Game extends React.Component {
@@ -58,14 +58,13 @@ class Game extends React.Component {
         squares[x][y] = this.state.blackIsNext ? '●' : '○';
       }
       console.log(this.state.blackIsNext)
-      // this.setState({
-      //   history: history.concat([{
-      //     squares: squares,
-      //   }]),
-      //   stepNumber: history.length,
-      //   // blackIsNext: !this.state.blackIsNext,
-      //   blackIsNext: BLACK,
-      // });
+      this.setState({
+        history: history.concat([{
+          squares: squares,
+        }]),
+        stepNumber: history.length,
+        blackIsNext: !this.state.blackIsNext,
+      });
 
       this.update(squares, !this.state.blackIsNext);
     }
@@ -110,17 +109,11 @@ class Game extends React.Component {
     let tmpData = []
     let flipCheckFlag = false;
 
-    // console.log('think');
-    // console.log(squares);
-    // this.waitTime(500);
-
     for (let x = 0; x < 8; x++) {
       for (let y = 0; y < 8; y++) {
         let flipped = this.getFlipCells(x, y, WHITE, squares);
         if (flipped.length > 0) {
           tmpData = JSON.parse(JSON.stringify(squares), setTimeout(() => { JSON.parse(JSON.stringify(squares)) }, 0));
-          // console.log("tmpData,x:" + x.toString() + ",y:" + y.toString());
-          // console.log(tmpData);
           for (let i = 0; i < flipped.length; i++) {
             let p = flipped[i][0];
             let q = flipped[i][1];
@@ -137,7 +130,7 @@ class Game extends React.Component {
       }
     }
 
-    console.log("max-positon px:" + px + ",py:" + py);
+    // console.log("max-positon px:" + px + ",py:" + py);
 
     if (px >= 0 && py >= 0) {
       let flipped = this.getFlipCells(px, py, WHITE, squares);
@@ -309,10 +302,6 @@ class Game extends React.Component {
       );
     });
 
-    
-    // console.log("nowStep")
-    // console.log(nowStep)
-
     let status;
     let pointBlack = this.getNumStone(BLACK, current.squares);
     let pointWhite = this.getNumStone(WHITE, current.squares);
@@ -344,7 +333,7 @@ class Game extends React.Component {
           }> 
             Next 
           </button>
-          {/* <ol>{moves}</ol> */}
+          <button onClick={() => this.jumpTo(0)}>Reset</button>
         </div>
       </div>
     );
