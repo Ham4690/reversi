@@ -1,5 +1,6 @@
 import React from 'react'
 import Board from './Board'
+import SoundBgm from './SoundBgm';
 
 const BLACK = true;
 const WHITE = false;
@@ -314,6 +315,7 @@ class Game extends React.Component {
 
     return (
       <div className="game">
+        <SoundBgm />
         <div className="game-board">
           <Board
             squares={current.squares}
