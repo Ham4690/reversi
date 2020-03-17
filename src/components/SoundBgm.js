@@ -16,10 +16,11 @@ class SoundBgm extends React.Component {
 
   render() {
     const SoundBtnIcon = this.state.soundOn ? <VolumeUpIcon /> : <VolumeOffIcon /> 
+    const bgmUrl = window.location.origin + "/sound/freetime.mp3"
 
     return(
       <div className="sound">
-        <Sound url="freetime.mp3" playStatus={Sound.status.PLAYING} />
+        <Sound url={bgmUrl} playStatus={Sound.status.PLAYING} />
         <IconButton 
           onClick = {() => {
             const soundPlay = this.state.soundOn ? 'Sound.status.STOPPED' : 'Sound.status.PLAYING'
